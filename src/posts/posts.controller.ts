@@ -13,7 +13,7 @@ export class PostsController {
   }
 
   @Get(':id')
-  async findOne(@Param() id: string): Promise<PostEntity> {
+  async findOne(@Param('id') id: string): Promise<PostEntity> {
     return this.postService.findOne(id);
   }
 
