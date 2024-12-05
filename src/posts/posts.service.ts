@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PostEntity, PostDocument } from './entities/post.entity';
 import { Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
+import { PaginationQueryDto } from 'src/common/dto/Pagination-query.dto';
 
 @Injectable()
 export class PostsService {
@@ -16,8 +17,11 @@ export class PostsService {
     return newPost.save();
   }
 
-  async findAll(): Promise<PostDocument[]> {
-    return this.postModule.find();
+  async findAll(
+    paginationQueryDto: PaginationQueryDto,
+  ): Promise<PostDocument[]> {
+    const { limit, offset } = paginationQueryDto;
+    return this.postModule.find({ skip: offset, take: limit });
   }
 
   async findOne(id: string): Promise<PostEntity> {
