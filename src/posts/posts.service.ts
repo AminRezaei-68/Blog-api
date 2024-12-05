@@ -11,12 +11,6 @@ export class PostsService {
     @InjectModel(PostEntity.name) private postModule: Model<PostDocument>,
   ) {}
 
-  async createPost(createPostDto: CreatePostDto): Promise<PostDocument> {
-    const { title, content, author } = createPostDto;
-    const newPost = new this.postModule({ title, content, author });
-    return newPost.save();
-  }
-
   async findAll(
     paginationQueryDto: PaginationQueryDto,
   ): Promise<PostDocument[]> {
@@ -30,5 +24,33 @@ export class PostsService {
       throw new NotFoundException(`The post with id ${id} not found.`);
     }
     return post;
+  }
+
+  async createPost(createPostDto: CreatePostDto): Promise<PostDocument> {
+    // const { title, content, author } = createPostDto;
+    const newPost = new this.postModule(createPostDto);
+    return newPost.save();
+  }
+
+  async updatePost(id, updatePostDto): Promise<PostDocument> {
+    const updatedPost = await this.postModule.findByIdAndUpdate(
+      id,
+      updatePostDto,
+      { new: true },
+    );
+    if (!updatedPost) {
+      throw new NotFoundException(`Post with id ${id} not found.`);
+    }
+    return updatedPost;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const result = await this.postModule.findByIdAndDelete(id);
+
+    if (!result) {
+      throw new NotFoundException(`Post with id ${id} not found.`);
+    }
+
+    return { message: `Post with ID "${id}" successfully deleted.` };
   }
 }
