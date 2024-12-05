@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostDocument } from './entities/post.entity';
+import { PostEntity, PostDocument } from './entities/post.entity';
 import { Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
-    @InjectModel(Post.name) private postModule: Model<PostDocument>,
+    @InjectModel(PostEntity.name) private postModule: Model<PostDocument>,
   ) {}
 
   async createPost(createPostDto: CreatePostDto): Promise<PostDocument> {
@@ -18,5 +18,13 @@ export class PostsService {
 
   async findAll(): Promise<PostDocument[]> {
     return this.postModule.find();
+  }
+
+  async findOne(id: string): Promise<PostEntity> {
+    const post = this.postModule.findById(id);
+    if (!post) {
+      throw new NotFoundException(`The post with id ${id} not found.`);
+    }
+    return post;
   }
 }

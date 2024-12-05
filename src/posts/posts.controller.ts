@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { PostDocument } from './entities/post.entity';
+import { PostEntity, PostDocument } from './entities/post.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -10,6 +10,11 @@ export class PostsController {
   @Get()
   async findAll(): Promise<PostDocument[]> {
     return this.postService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param() id: string): Promise<PostEntity> {
+    return this.postService.findOne(id);
   }
 
   @Post()
