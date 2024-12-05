@@ -21,7 +21,7 @@ export class PostsService {
   }
 
   async findOne(id: string): Promise<PostEntity> {
-    const post = this.postModule.findById(id);
+    const post = await this.postModule.findById(id);
     if (!post) {
       throw new NotFoundException(`The post with id ${id} not found.`);
     }
