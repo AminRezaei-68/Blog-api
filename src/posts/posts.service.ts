@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from './entities/post.entity';
 import { Model } from 'mongoose';
@@ -14,5 +14,9 @@ export class PostsService {
     const { title, content, author } = createPostDto;
     const newPost = new this.postModule({ title, content, author });
     return newPost.save();
+  }
+
+  async findAll(): Promise<PostDocument[]> {
+    return this.postModule.find();
   }
 }
