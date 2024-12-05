@@ -4,36 +4,54 @@ import { PostEntity, PostDocument } from './entities/post.entity';
 import { Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from 'src/common/dto/Pagination-query.dto';
+import { PostQuery } from 'src/common/interfaces/post-query.interface';
 
 @Injectable()
 export class PostsService {
   constructor(
-    @InjectModel(PostEntity.name) private postModule: Model<PostDocument>,
+    @InjectModel(PostEntity.name) private postModel: Model<PostDocument>,
   ) {}
 
   async findAll(
     paginationQueryDto: PaginationQueryDto,
   ): Promise<PostDocument[]> {
     const { limit, offset } = paginationQueryDto;
-    return this.postModule.find({ skip: offset, take: limit });
+    return this.postModel.find({ skip: offset, take: limit });
   }
 
   async findOne(id: string): Promise<PostEntity> {
-    const post = await this.postModule.findById(id);
+    const post = await this.postModel.findById(id);
     if (!post) {
       throw new NotFoundException(`The post with id ${id} not found.`);
     }
     return post;
   }
 
+  async filteredPosts(query: PostQuery): Promise<PostDocument[]> {
+    const queryFilter: any = {};
+
+    if (query.title) {
+      queryFilter.title = { $regex: query.title, $options: 'i' };
+    }
+
+    if (query.author) {
+      queryFilter.author = { $regex: query.author, $options: 'i' };
+    }
+
+    if (query.content) {
+      queryFilter.content = { $regex: query.content, $options: 'i' };
+    }
+
+    return this.postModel.find(queryFilter).exec();
+  }
+
   async createPost(createPostDto: CreatePostDto): Promise<PostDocument> {
-    // const { title, content, author } = createPostDto;
-    const newPost = new this.postModule(createPostDto);
+    const newPost = new this.postModel(createPostDto);
     return newPost.save();
   }
 
   async updatePost(id, updatePostDto): Promise<PostDocument> {
-    const updatedPost = await this.postModule.findByIdAndUpdate(
+    const updatedPost = await this.postModel.findByIdAndUpdate(
       id,
       updatePostDto,
       { new: true },
@@ -45,7 +63,7 @@ export class PostsService {
   }
 
   async remove(id: string): Promise<{ message: string }> {
-    const result = await this.postModule.findByIdAndDelete(id);
+    const result = await this.postModel.findByIdAndDelete(id);
 
     if (!result) {
       throw new NotFoundException(`Post with id ${id} not found.`);

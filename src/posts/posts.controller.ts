@@ -13,10 +13,19 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { PostEntity, PostDocument } from './entities/post.entity';
 import { PaginationQueryDto } from 'src/common/dto/Pagination-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { title } from 'process';
+import { query } from 'express';
+import { PostQuery } from 'src/common/interfaces/post-query.interface';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postService: PostsService) {}
+
+  @Get('filter')
+  getPosts(@Query() query: PostQuery): Promise<PostDocument[]> {
+    console.log('hit filter');
+    return this.postService.filteredPosts(query);
+  }
 
   @Get()
   findAll(
