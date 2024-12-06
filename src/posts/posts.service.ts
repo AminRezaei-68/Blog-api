@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PostEntity, PostDocument } from './entities/post.entity';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from 'src/common/dto/Pagination-query.dto';
 import { PostQuery } from 'src/common/interfaces/post-query.interface';
@@ -63,6 +67,9 @@ export class PostsService {
   }
 
   async remove(id: string): Promise<{ message: string }> {
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException('Invalid ID format.');
+    }
     const result = await this.postModel.findByIdAndDelete(id);
 
     if (!result) {
