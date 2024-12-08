@@ -15,4 +15,4 @@ export class User extends Document {
   isAdmin: boolean;
 }
 
-export class userEntity = SchemaFactory.createForClass(User);
+export const userEntity = SchemaFactory.createForClass(User);
