@@ -4,11 +4,11 @@ import { AuthService } from './auth.service';
 import { LoginDto } from 'src/common/dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiTags('auth')
   @Post('signup')
   async signup(@Body() signupDto: SignupDto) {
     return this.authService.signup(signupDto);
