@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 
 type UserResponse = Partial<User> & { id: string };
 
@@ -44,6 +45,23 @@ export class UsersService {
 
     await user.save();
     return { message: 'Password updated successfully' };
+  }
+
+  async updateStatus(userId: string, updateUserStatusDto: UpdateUserStatusDto) {
+    const { isActive } = updateUserStatusDto;
+
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    user.isActive = isActive;
+    await user.save();
+
+    return {
+      message: `User status updated to ${isActive ? 'active' : 'inactive'}`,
+    };
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserResponse> {
