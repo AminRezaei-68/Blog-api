@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
 type UserResponse = Partial<User> & { id: string };
 
@@ -17,15 +18,25 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
+  private async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+  }
+
   async create(createUserDto: CreateUserDto): Promise<UserResponse> {
-    const { email } = createUserDto;
+    const { email, password } = createUserDto;
 
     const userExists = await this.userModel.findOne({ email }).exec();
     if (userExists) {
       throw new BadRequestException('A user with this email already exists.');
     }
 
-    const user = new this.userModel(createUserDto);
+    const hashedPassword = await this.hashPassword(password);
+
+    const user = new this.userModel({
+      ...createUserDto,
+      password: hashedPassword,
+    });
     const savedUser = await user.save();
 
     return {
@@ -90,6 +101,10 @@ export class UsersService {
       if (emailExists && emailExists.id !== id) {
         throw new BadRequestException('This email is already in use.');
       }
+    }
+
+    if (updateUserDto.password) {
+      updateUserDto.password = await this.hashPassword(updateUserDto.password);
     }
 
     Object.assign(user, updateUserDto);
