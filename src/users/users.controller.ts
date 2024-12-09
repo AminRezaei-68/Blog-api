@@ -19,42 +19,37 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('users')
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @Roles('admin', 'user')
   async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, PostOwnershipGuard)
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, PostOwnershipGuard, RolesGuard)
   @Roles('admin', 'user')
-  @UseGuards(JwtAuthGuard, PostOwnershipGuard)
+  @UseGuards(PostOwnershipGuard)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, PostOwnershipGuard)
   async remove(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }
