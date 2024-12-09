@@ -9,7 +9,7 @@ export class User extends Document {
   email: string;
 
   @Prop({ type: [String], default: ['user'] })
-  role: string[];
+  roles: string[];
 
   @Prop({ required: true })
   password: string;
