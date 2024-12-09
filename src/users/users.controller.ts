@@ -18,6 +18,7 @@ import { PostOwnershipGuard } from 'src/common/guards/post-ownership/post-owners
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -45,6 +46,15 @@ export class UsersController {
   ) {
     const userId = req.user.id;
     return this.usersService.changePassword(userId, changePasswordDto);
+  }
+
+  @Post(':id/status')
+  @Roles('admin')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateUserStatusDto: UpdateUserStatusDto,
+  ) {
+    return this.usersService.updateStatus(id, updateUserStatusDto);
   }
 
   @Post()
