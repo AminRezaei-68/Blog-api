@@ -20,11 +20,7 @@ export class AuthService {
       throw new UnauthorizedException('Username or email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(signupDto.password, 10);
-    await this.userservice.create({
-      ...signupDto,
-      password: hashedPassword,
-    });
+    await this.userservice.create(signupDto);
 
     return { message: 'User registered successfully' };
   }
