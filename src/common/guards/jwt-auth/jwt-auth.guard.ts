@@ -13,7 +13,7 @@ import { UsersService } from 'src/users/users.service';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   constructor(
-    private readonly reflector: Reflector,
+    protected readonly reflector: Reflector,
     private readonly usersService: UsersService,
   ) {
     super();
