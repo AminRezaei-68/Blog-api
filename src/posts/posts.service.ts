@@ -4,26 +4,26 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PostEntity, PostDocument } from './entities/post.entity';
+import { PostSch, PostDocument } from './schemas/post.schema';
 import { isValidObjectId, Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
-import { PaginationQueryDto } from 'src/common/dto/Pagination-query.dto';
-import { PostQuery } from 'src/common/interfaces/post-query.interface';
+import { PaginationQueryDto } from '../common/dto/Pagination-query.dto';
+import { PostQuery } from '../common/interfaces/post-query.interface';
 
 @Injectable()
 export class PostsService {
   constructor(
-    @InjectModel(PostEntity.name) private postModel: Model<PostDocument>,
+    @InjectModel(PostSch.name) private postModel: Model<PostDocument>,
   ) {}
 
   async findAll(
     paginationQueryDto: PaginationQueryDto,
   ): Promise<PostDocument[]> {
-    const { limit, offset } = paginationQueryDto;
-    return this.postModel.find({ skip: offset, take: limit });
+    const { limit = 10, offset = 0 } = paginationQueryDto;
+    return this.postModel.find().skip(offset).limit(limit).exec();
   }
 
-  async findOne(id: string): Promise<PostEntity> {
+  async findOne(id: string): Promise<PostDocument> {
     const post = await this.postModel.findById(id);
     if (!post) {
       throw new NotFoundException(`The post with id ${id} not found.`);
@@ -31,7 +31,11 @@ export class PostsService {
     return post;
   }
 
-  async filteredPosts(query: PostQuery): Promise<PostDocument[]> {
+  async filteredPosts(
+    query: PostQuery,
+    paginationQuaryDto: PaginationQueryDto,
+  ): Promise<PostDocument[]> {
+    const { offset = 0, limit = 10 } = paginationQuaryDto;
     const queryFilter: any = {};
 
     if (query.title) {
@@ -46,11 +50,14 @@ export class PostsService {
       queryFilter.content = { $regex: query.content, $options: 'i' };
     }
 
-    return this.postModel.find(queryFilter).exec();
+    return this.postModel.find(queryFilter).skip(offset).limit(limit).exec();
   }
 
-  async createPost(createPostDto: CreatePostDto): Promise<PostDocument> {
-    const newPost = new this.postModel(createPostDto);
+  async createPost(
+    createPostDto: CreatePostDto,
+    author: string,
+  ): Promise<PostDocument> {
+    const newPost = new this.postModel({ ...createPostDto, author: author });
     return newPost.save();
   }
 
