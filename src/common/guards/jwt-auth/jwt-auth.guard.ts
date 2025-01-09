@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { Observable } from 'rxjs';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -27,9 +26,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+
     const user = request.user;
 
-    const dbUser = await this.usersService.findOne(user.id);
+    const dbUser = await this.usersService.findOne(user.userId);
 
     if (!dbUser) {
       throw new NotImplementedException('User not found');
