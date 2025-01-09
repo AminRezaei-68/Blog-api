@@ -8,17 +8,20 @@ import {
   Post,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { PostEntity, PostDocument } from './entities/post.entity';
+import { PostDocument } from './schemas/post.schema';
 import { PaginationQueryDto } from 'src/common/dto/Pagination-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PostQuery } from 'src/common/interfaces/post-query.interface';
-import { ApiKeyGuard } from 'src/common/guards/api-key/api-key.guard';
-import { Public } from 'src/common/decorators/public.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
-import { PostOwnershipGuard } from 'src/common/guards/post-ownership/post-ownership.guard';
+import { PostQuery } from '../common/interfaces/post-query.interface';
+import { ApiKeyGuard } from '../common/guards/api-key/api-key.guard';
+import { Public } from '../common/decorators/public.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth/jwt-auth.guard';
+import { PostOwnershipGuard } from '../common/guards/post-ownership/post-ownership.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles/roles.guard';
 
 @Controller('posts')
 @UseGuards(ApiKeyGuard)
@@ -27,8 +30,11 @@ export class PostsController {
 
   @Get('filter')
   @Public()
-  getPosts(@Query() query: PostQuery): Promise<PostDocument[]> {
-    return this.postService.filteredPosts(query);
+  getPosts(
+    @Query() query: PostQuery,
+    @Body() paginationQuaryDto: PaginationQueryDto,
+  ): Promise<PostDocument[]> {
+    return this.postService.filteredPosts(query, paginationQuaryDto);
   }
 
   @Get()
@@ -41,18 +47,23 @@ export class PostsController {
 
   @Get(':id')
   @Public()
-  findOne(@Param('id') id: string): Promise<PostEntity> {
+  findOne(@Param('id') id: string): Promise<PostDocument> {
     return this.postService.findOne(id);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createPostDto: CreatePostDto): Promise<PostDocument> {
-    return this.postService.createPost(createPostDto);
+  create(
+    @Body() createPostDto: CreatePostDto,
+    @Request() req: any,
+  ): Promise<PostDocument> {
+    const author = req.user.name;
+    return this.postService.createPost(createPostDto, author);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, PostOwnershipGuard)
+  @UseGuards(JwtAuthGuard, PostOwnershipGuard, RolesGuard)
+  @Roles('user', 'admin')
   update(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
@@ -61,7 +72,8 @@ export class PostsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, PostOwnershipGuard)
+  @UseGuards(JwtAuthGuard, PostOwnershipGuard, RolesGuard)
+  @Roles('user', 'admin')
   remove(@Param('id') id: string): Promise<{ message: string }> {
     return this.postService.remove(id);
   }
