@@ -15,14 +15,14 @@ export class PostOwnershipGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const userId = request.user.id;
     const postId = request.params.id;
+    const author = request.user.name;
 
     return this.postsService.findOne(postId).then((post) => {
       if (!post) {
         throw new NotFoundException('Post not found');
       }
-      return post.author === userId;
+      return post.author === author;
     });
   }
 }
