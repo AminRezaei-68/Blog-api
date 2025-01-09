@@ -9,7 +9,12 @@ import {
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100, { message: 'Username must not exceed 50 characters.' })
+  @MaxLength(50, { message: 'name must not exceed 50 characters.' })
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100, { message: 'Username must not exceed 100 characters.' })
   username: string;
 
   @IsString()
