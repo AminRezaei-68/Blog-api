@@ -3,6 +3,10 @@ import { IsEmail, IsString, Matches, MinLength } from '@nestjs/class-validator';
 export class SignupDto {
   @IsString()
   @MinLength(3, { message: 'Username must be at least 3 characters.' })
+  name: string;
+
+  @IsString()
+  @MinLength(3, { message: 'Username must be at least 3 characters.' })
   username: string;
 
   @IsEmail()
