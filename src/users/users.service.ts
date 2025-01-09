@@ -6,12 +6,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './entities/user.entity';
+import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { PaginationQueryDto } from '../common/dto/Pagination-query.dto';
 
 type UserResponse = Partial<User> & { id: string };
 
@@ -86,8 +87,11 @@ export class UsersService {
     };
   }
 
-  async findAll(): Promise<UserResponse[]> {
-    const users = await this.userModel.find().exec();
+  async findAll(
+    paginationQuaryDto: PaginationQueryDto,
+  ): Promise<UserResponse[]> {
+    const { offset = 0, limit = 10 } = paginationQuaryDto;
+    const users = await this.userModel.find().skip(offset).limit(limit).exec();
 
     return users.map((user) => ({
       id: user._id.toString(),
@@ -107,11 +111,13 @@ export class UsersService {
       id: user._id.toString(),
       username: user.username,
       email: user.email,
+      isActive: user.isActive,
     };
   }
 
   async findByUsernameOrEmail(
     usernameOrEmail: string,
+    includeSensitiveData: boolean = false,
   ): Promise<UserResponse | undefined> {
     const user = await this.userModel
       .findOne({
@@ -119,9 +125,24 @@ export class UsersService {
       })
       .exec();
 
-    return user
-      ? { id: user._id.toString(), username: user.username, email: user.email }
-      : undefined;
+    if (!user) {
+      return undefined;
+    }
+
+    const userRespone: UserResponse = {
+      id: user._id.toString(),
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      roles: user.roles,
+      isActive: user.isActive,
+    };
+
+    if (includeSensitiveData) {
+      userRespone.password = user.password;
+    }
+
+    return userRespone;
   }
 
   async updateUser(

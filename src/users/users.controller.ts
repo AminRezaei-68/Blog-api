@@ -13,12 +13,13 @@ import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
-import { PostOwnershipGuard } from 'src/common/guards/post-ownership/post-ownership.guard';
-import { RolesGuard } from 'src/common/guards/roles/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth/jwt-auth.guard';
+import { PostOwnershipGuard } from '../common/guards/post-ownership/post-ownership.guard';
+import { RolesGuard } from '../common/guards/roles/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { PaginationQueryDto } from '../common/dto/Pagination-query.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -28,8 +29,8 @@ export class UsersController {
 
   @Get()
   @Roles('admin')
-  async findAll() {
-    return this.usersService.findAll();
+  async findAll(paginationQuaryDto: PaginationQueryDto) {
+    return this.usersService.findAll(paginationQuaryDto);
   }
 
   @Get(':id')
@@ -38,7 +39,7 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @Post('change-password')
+  @Patch('change-password')
   @Roles('admin', 'user')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
@@ -48,7 +49,7 @@ export class UsersController {
     return this.usersService.changePassword(userId, changePasswordDto);
   }
 
-  @Post(':id/status')
+  @Patch(':id/status')
   @Roles('admin')
   async updateStatus(
     @Param('id') id: string,
