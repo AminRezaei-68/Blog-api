@@ -58,7 +58,7 @@ export class PostsService {
     author: string,
   ): Promise<PostDocument> {
     const newPost = new this.postModel({ ...createPostDto, author: author });
-    return newPost.save();
+    return await newPost.save();
   }
 
   async updatePost(id, updatePostDto): Promise<PostDocument> {
